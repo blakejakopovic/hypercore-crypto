@@ -1,3 +1,7 @@
+const { hmac } = require('@noble/hashes/hmac')
+const { sha256 } = require('@noble/hashes/sha256')
+const secp256k1 = require('@noble/secp256k1')
+
 const sodium = require('sodium-universal')
 const c = require('compact-encoding')
 const b4a = require('b4a')
@@ -10,11 +14,9 @@ const ROOT_TYPE = b4a.from([2])
 const HYPERCORE = b4a.from('hypercore')
 
 exports.keyPair = function (seed) {
-  const publicKey = b4a.allocUnsafe(sodium.crypto_sign_PUBLICKEYBYTES)
-  const secretKey = b4a.allocUnsafe(sodium.crypto_sign_SECRETKEYBYTES)
-
-  if (seed) sodium.crypto_sign_seed_keypair(publicKey, secretKey, seed)
-  else sodium.crypto_sign_keypair(publicKey, secretKey)
+  // TODO: Add back seed input support (if possible)
+  const secretKey = b4a.from(secp256k1.utils.randomPrivateKey())
+  const publicKey = b4a.from(secp256k1.schnorr.getPublicKey(secretKey))
 
   return {
     publicKey,
@@ -23,19 +25,19 @@ exports.keyPair = function (seed) {
 }
 
 exports.validateKeyPair = function (keyPair) {
-  const pk = b4a.allocUnsafe(sodium.crypto_sign_PUBLICKEYBYTES)
-  sodium.crypto_sign_ed25519_sk_to_pk(pk, keyPair.secretKey)
+  const pk = b4a.from(secp256k1.schnorr.getPublicKey(keyPair.secretKey))
   return b4a.equals(pk, keyPair.publicKey)
 }
 
 exports.sign = function (message, secretKey) {
-  const signature = b4a.allocUnsafe(sodium.crypto_sign_BYTES)
-  sodium.crypto_sign_detached(signature, message, secretKey)
-  return signature
+  secp256k1.utils.hmacSha256Sync = (key, ...msgs) => hmac(sha256, key, secp256k1.utils.concatBytes(...msgs))
+  secp256k1.utils.sha256Sync = (...msgs) => sha256(secp256k1.utils.concatBytes(...msgs))
+
+  return b4a.from(secp256k1.schnorr.signSync(message, secretKey))
 }
 
 exports.verify = function (message, signature, publicKey) {
-  return sodium.crypto_sign_verify_detached(signature, message, publicKey)
+  return secp256k1.schnorr.verifySync(signature, message, publicKey)
 }
 
 exports.data = function (data) {

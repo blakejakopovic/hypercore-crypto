@@ -4,6 +4,8 @@
   "description": "The crypto primitives used in hypercore, extracted into a separate module",
   "main": "index.js",
   "dependencies": {
+    "@noble/hashes": "^1.1.3",
+    "@noble/secp256k1": "^1.7.0",
     "b4a": "^1.1.0",
     "compact-encoding": "^2.5.1",
     "sodium-universal": "^3.0.0"

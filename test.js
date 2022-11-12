@@ -12,7 +12,7 @@ test('key pair', function (t) {
   const keyPair = crypto.keyPair()
 
   t.is(keyPair.publicKey.length, 32)
-  t.is(keyPair.secretKey.length, 64)
+  t.is(keyPair.secretKey.length, 32)
 })
 
 test('validate key pair', function (t) {

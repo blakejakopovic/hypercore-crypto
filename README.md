@@ -14,14 +14,14 @@ npm install hypercore-crypto
 const crypto = require('hypercore-crypto')
 
 const keyPair = crypto.keyPair()
-console.log(keyPair) // prints a ed25519 keypair
+console.log(keyPair) // prints a secp256k1 keypair
 ```
 
 ## API
 
 #### `keyPair = crypto.keyPair()`
 
-Returns an `ED25519` keypair that can used for tree signing.
+Returns an `secp256k1` keypair that can used for tree signing.
 
 #### `signature = crypto.sign(message, secretKey)`
 
